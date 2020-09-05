@@ -26,11 +26,14 @@ class Plants {
     this.locations.forEach(_marker => {
       var tempMarker = L.marker([_marker.x, _marker.y], {
         opacity: Settings.markerOpacity,
-        icon: new L.divIcon({
+        icon: L.divIcon({
           iconUrl: `assets/images/markers/${this.key}.png`,
           iconSize: [35 * Settings.markerSize, 45 * Settings.markerSize],
           iconAnchor: [17 * Settings.markerSize, 42 * Settings.markerSize],
-          popupAnchor: [0 * Settings.markerSize, -28 * Settings.markerSize]
+          popupAnchor: [0 * Settings.markerSize, -28 * Settings.markerSize],
+          shadowUrl: 'assets/images/markers-shadow.png',
+          shadowSize:   [35 * Settings.markerSize, 16 * Settings.markerSize], 
+          shadowAnchor: [10 * Settings.markerSize, 10 * Settings.markerSize]
         })
       });
       tempMarker.bindPopup(
@@ -79,7 +82,6 @@ class Plants {
 
 class PlantsCollection {
 
-  static start = Date.now();
   static layer = L.canvasIconLayer({ zoomAnimation: true });
   static enabledCategories = [];
   static markers = [];
@@ -91,7 +93,7 @@ class PlantsCollection {
 
     return Loader.promises['plants'].consumeJson(data => {
       data.forEach(item => this.locations.push(new Plants(item)));
-      console.info(`%c[Plants] Loaded in ${Date.now() - PlantsCollection.start}ms!`, 'color: #bada55; background: #242424');
+      console.info(`%c[Plants] Loaded!`, 'color: #bada55; background: #242424');
       setTimeout(() => PlantsCollection.layer.redraw(), 40);
       Menu.reorderMenu(this.context);
     });
