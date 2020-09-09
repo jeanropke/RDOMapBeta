@@ -70,10 +70,18 @@
     </div>
     -->
     <div class="links-container">
-      <!--<a data-text="menu.hide_all" data-help="hide_all" href="javascript:void(0);" onclick="Menu.hideAll()">Hide all</a>-->
-      <!--<a data-text="menu.show_all" data-help="show_all" href="javascript:void(0);" onclick="Menu.showAll()">Show all</a>-->
+      <a data-text="menu.hide_all" class="menu-hide-all" data-help="hide_all" href="javascript:void(0);">Hide all</a>
+      <a data-text="menu.show_all" class="menu-show-all" data-help="show_all" href="javascript:void(0);">Show all</a>
     </div>   
 
+    <div>
+      <div class="menu-option clickable" data-type="harrietum" data-help="item_category">
+        <span>
+          <img class="icon" src="./assets/images/icons/harrietum.png" />
+          <span data-text="menu.harrietum" style="color: #fdc607;">Harrietum Officianalis</span>
+        </span>
+      </div>
+    </div>
     <div>
       <div class="menu-option clickable" data-type="boats" data-help="item_category">
         <span>
@@ -431,13 +439,13 @@
         <div class="input-action"></div>
       </div>
       <hr class="menu-divider">
-      <!--div class="input-container" data-help="marker_cluster">
+      <div class="input-container" data-help="marker_cluster">
         <label for="marker-cluster" data-text="menu.marker_cluster">Markers cluster</label>
         <div class="input-checkbox-wrapper">
           <input class="input-checkbox" type="checkbox" name="marker-cluster" value="1" id="marker-cluster" />
           <label class="input-checkbox-label" for="marker-cluster"></label>
         </div>
-      </div-->
+      </div>
       <div class="input-container" data-help="enable_marker_popups_hover">
         <label for="enable-marker-popups-hover" data-text="menu.enable_marker_popups_hover">Open marker popups on
           hover</label>
@@ -503,7 +511,7 @@
       <div id="dailies-next" class="input-selection-arrow"><img src="assets/images/selection_right.png" alt="arrow"></div>
     </div>
 
-    <div class="dailies daily-challenges"></div>
+    <div class="dailies daily-challenges" data-type="dailies"></div>
     <div class="header">
       <span class="header-border"></span>
       <h2 class="header-title" data-text="menu.import_export_title">Import/Export</h2>
