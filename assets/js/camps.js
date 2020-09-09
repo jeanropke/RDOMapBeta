@@ -22,8 +22,7 @@ class Camp {
 
     this.layer = L.layerGroup();
 
-    this.markers = [];
-    this.locations.forEach(item => this.markers.push(new Marker(item.text, item.x, item.y, 'camps', this.key, item.type)));
+    this.onLanguageChanged();
 
     this.element = $(`<div class="collectible-wrapper" data-help="item" data-type="${this.key}">`)
       .toggleClass('disabled', !this.onMap)
@@ -33,10 +32,15 @@ class Camp {
 
     this.element.appendTo(Camp.context);
 
-    this.reinitMarker();
-
     if (this.onMap)
       this.layer.addTo(MapBase.map);
+  }
+
+  onLanguageChanged() {
+    this.markers = [];
+    this.locations.forEach(item => this.markers.push(new Marker(item.text, item.x, item.y, 'camps', this.key, item.type)));
+
+    this.reinitMarker();
   }
 
   reinitMarker() {
@@ -46,8 +50,9 @@ class Camp {
 
         if (!Camp.isLarge && marker.size == 'large') return;
         if (!Camp.isSmall && marker.size == 'small') return;
+        
         var shadow = Settings.isShadowsEnabled ? '<img class="shadow" width="' + 35 * Settings.markerSize + '" height="' + 16 * Settings.markerSize + '" src="./assets/images/markers-shadow.png" alt="Shadow">' : '';
-        this.layer.addLayer(L.marker([marker.lat, marker.lng], {
+        var tempMarker = L.marker([marker.lat, marker.lng], {
           opacity: Settings.markerOpacity,
           icon: new L.DivIcon.DataMarkup({
             iconSize: [35 * Settings.markerSize, 45 * Settings.markerSize],
@@ -60,8 +65,11 @@ class Camp {
               </div>`,
             marker: this.key
           })
-        })
-          .bindPopup(marker.updateMarkerContent(), { minWidth: 300, maxWidth: 400 }));
+        }).bindPopup(marker.updateMarkerContent(), { minWidth: 300, maxWidth: 400 });
+
+        this.layer.addLayer(tempMarker);
+        if (Settings.isMarkerClusterEnabled)
+          Layers.oms.addMarker(tempMarker);
       }
     );
   }

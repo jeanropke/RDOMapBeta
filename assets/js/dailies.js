@@ -7,10 +7,11 @@ class Dailies {
     this.index = index;
   }
   static init() {
-    this.categories = ['general', 'trader', 'collector', 'bounty_hunter', 'moonshiner', 'naturalist'];
+    this.categories = [];
     this.categoryOffset = 0;
     this.jsonData = [];
     this.dailies = [];
+    this.context = $('.daily-challenges[data-type=dailies]');
 
     const websiteData = Loader.promises['daily'].consumeJson(data => this.dailies = data.dailies);
     const allDailies = Loader.promises['possible_dailies'].consumeJson(data => this.jsonData = data);
@@ -21,9 +22,9 @@ class Dailies {
     return Promise.all([websiteData, allDailies])
       .then(() => {
         console.info(`%c[Dailies] Loaded!`, 'color: #bada55; background: #242424');
-
         Object.keys(this.dailies).forEach(role => {
-          $('.dailies').append($(`<div id="${role}" class="daily-role"></div>`).css('display', role == 'general' ? 'block' : 'none'));
+          this.categories.push(role);
+          $('.dailies').append($(`<div id="${role}" class="daily-role"></div>`).toggleClass('hidden', role !== this.categories[0]));
           this.dailies[role].list.forEach(({ text, target }, index) => {
             text = text.replace(/\*+$/, '').toLowerCase();
             let translationKey
@@ -36,6 +37,7 @@ class Dailies {
             newDaily.appendToMenu();
           });
         });
+        this.onLanguageChanged();
       })
       .catch(this.dailiesNotUpdated);
   }
@@ -45,57 +47,41 @@ class Dailies {
     $(`.dailies > #${this.role}`)
       .append($(`
           <div class="one-daily-container">
-            <span class="counter">${this.value}/${this.target}</span>
-            <span class="daily" id="daily-${this.role}-${this.index}">${Language.get(this.translationKey)}</span>
+            <span class="counter" data-text="${this.value}/${this.target}"></span>
+            <span class="daily" id="daily-${this.role}-${this.index}" data-text="${this.translationKey}"></span>
           </div>`))
+      .translate()
       .find('.one-daily-container')
       .css({
         'grid-template-areas': `\"${structure[1]} ${structure[2]}\"`,
         'justify-content': structure[2] === 'counter' ? 'space-between' : 'left'
       })
       .find(`#daily-${this.role}-${this.index}`)
-      .toggleClass('not-found', Language.get(this.translationKey) == this.translationKey)
+      .toggleClass('not-found', Language.get(this.translationKey) === this.translationKey)
       .end();
   }
   static dailiesNotUpdated() {
     $('.dailies').append($(`
       <div class="daily-not-found not-found">${Language.get('menu.dailies_not_found')}</div>
     `));
+    $('#dailies-changer-container').addClass('hidden');
   }
   static nextCategory() {
-    $(`#${Dailies.categories[Dailies.categoryOffset]}.daily-role`).css('display', 'none');
-
-    Dailies.categoryOffset++;
-
-    if (Dailies.categoryOffset > Dailies.categories.length - 1)
-      Dailies.categoryOffset = 0;
-
-    $('.dailies-title').text(Language.get(`menu.dailies_${Dailies.categories[Dailies.categoryOffset]}`));
-    $(`#${Dailies.categories[Dailies.categoryOffset]}.daily-role`).css('display', 'block');
+    Dailies.categoryOffset = (Dailies.categoryOffset + 1).mod(Dailies.categories.length);
+    Dailies.switchCategory();
   }
   static prevCategory() {
-    $(`#${Dailies.categories[Dailies.categoryOffset]}.daily-role`).css('display', 'none');
-
-    Dailies.categoryOffset--;
-
-    if (Dailies.categoryOffset < 0)
-      Dailies.categoryOffset = Dailies.categories.length - 1;
-
-    $('.dailies-title').text(Language.get(`menu.dailies_${Dailies.categories[Dailies.categoryOffset]}`));
-    $(`#${Dailies.categories[Dailies.categoryOffset]}.daily-role`).css('display', 'block');
+    Dailies.categoryOffset = (Dailies.categoryOffset - 1).mod(Dailies.categories.length);
+    Dailies.switchCategory();
   }
-
-  set completedDailies(num) {
-    if (num === 'true')
-      this.value = this.target;
-    else if (num === 'false')
-      this.value = 0;
-    else if (typeof num === 'number') {
-      this.value + num;
-      if (this.value < 0)
-        this.value = 0;
-      if (this.value > this.target)
-        this.value = this.target;
-    }
+  static switchCategory() {
+    const roles = $('.daily-role');
+    [].forEach.call(roles, element => {
+      $(element).toggleClass('hidden', element.id !== Dailies.categories[Dailies.categoryOffset]);
+    });
+    $('.dailies-title').text(Language.get(`menu.dailies_${Dailies.categories[Dailies.categoryOffset]}`));
+  }
+  static onLanguageChanged() {
+    Menu.reorderMenu(this.context);
   }
 }

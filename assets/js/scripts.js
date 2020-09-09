@@ -19,6 +19,12 @@ Object.defineProperty(String.prototype, 'includesOneOf', {
   }
 });
 
+Object.defineProperty(Number.prototype, 'mod', {
+  value: function (num) {
+    return ((this % num) + num) % num;
+  }
+});
+
 function init() {
 
   const navLang = navigator.language;
@@ -67,6 +73,9 @@ function init() {
   $('#timestamps-24').prop("checked", Settings.isClock24Hour);
   $('#show-dailies').prop("checked", Settings.showDailies);
   $('#show-coordinates').prop("checked", Settings.isCoordsOnClickEnabled);
+
+  $('#enable-debug').prop("checked", Settings.isDebugEnabled);
+  $('#enable-right-click').prop("checked", Settings.isRightClickEnabled);
 
   $("#help-container").toggle(Settings.showHelp);
   $('.daily-challenges').toggle(Settings.showDailies);
@@ -159,8 +168,18 @@ $('.menu-option.clickable input, #submit-new-herb').on('click', function (e) {
 
 $('#language').on('change', function () {
   Settings.language = $("#language").val();
-  //too lazy to refresh everything for now :P
-  location.reload();
+
+  Language.setMenuLanguage();
+  Treasure.onLanguageChanged();
+  Dailies.onLanguageChanged();
+
+  //WIP: update markers without reload page
+  Camp.locations.forEach(camp => camp.onLanguageChanged());
+  Encounter.locations.forEach(encounter => encounter.onLanguageChanged());
+  GunForHire.locations.forEach(gfh => gfh.onLanguageChanged());
+  Location.locations.forEach(location => location.onLanguageChanged());
+  Shop.locations.forEach(shop => shop.onLanguageChanged());
+  MadamNazar.addMadamNazar();
 });
 
 $('#marker-size').on('change', function () {
@@ -170,9 +189,9 @@ $('#marker-size').on('change', function () {
   Encounter.locations.forEach(encounter => encounter.reinitMarker());
   GunForHire.locations.forEach(gfh => gfh.reinitMarker());
   Location.locations.forEach(location => location.reinitMarker());
-  Pins.loadPins();
-  MadamNazar.addMadamNazar();
   Shop.locations.forEach(shop => shop.reinitMarker());
+  MadamNazar.addMadamNazar();
+  Pins.loadPins();
 });
 
 $('#marker-opacity').on('change', function () {
@@ -182,9 +201,9 @@ $('#marker-opacity').on('change', function () {
   Encounter.locations.forEach(encounter => encounter.reinitMarker());
   GunForHire.locations.forEach(gfh => gfh.reinitMarker());
   Location.locations.forEach(location => location.reinitMarker());
-  Pins.loadPins();
-  MadamNazar.addMadamNazar();
   Shop.locations.forEach(shop => shop.reinitMarker());
+  MadamNazar.addMadamNazar();
+  Pins.loadPins();
 });
 
 $('#overlay-opacity').on('change', function () {
@@ -202,6 +221,20 @@ $('#tooltip').on('change', function () {
     Menu.tippyInstances.forEach(instance => instance.destroy());
     Menu.tippyInstances = [];
   }
+});
+
+$('#marker-cluster').on("change", function () {
+  Settings.isMarkerClusterEnabled = $("#marker-cluster").prop('checked');
+
+  Layers.oms.clearMarkers();
+
+  Camp.locations.forEach(camp => camp.reinitMarker());
+  Encounter.locations.forEach(encounter => encounter.reinitMarker());
+  GunForHire.locations.forEach(gfh => gfh.reinitMarker());
+  Location.locations.forEach(location => location.reinitMarker());
+  Shop.locations.forEach(shop => shop.reinitMarker());
+  MadamNazar.addMadamNazar();
+  Pins.loadPins();
 });
 
 $('#enable-marker-popups-hover').on("change", function () {
@@ -248,6 +281,11 @@ $('#show-coordinates').on('change', function () {
   Settings.isCoordsOnClickEnabled = $("#show-coordinates").prop('checked');
   changeCursor();
 });
+
+$('#enable-debug').on("change", function () {
+  Settings.isDebugEnabled = $("#enable-debug").prop('checked');
+});
+
 //Open collection submenu
 $('.open-submenu').on('click', function (e) {
   e.stopPropagation();
